@@ -5,11 +5,14 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+
+	"github.com/TTTV273/Pokedex/internal/pokecache"
 )
 
 type config struct {
 	Next     *string
 	Previous *string
+	Cache    pokecache.Cache
 }
 
 type locationAreaResponse struct {
@@ -27,17 +30,26 @@ func commandMap(cfg *config) error {
 		url = *cfg.Next
 	}
 
-	res, err := http.Get(url)
-	if err != nil {
-		fmt.Println(err)
-		return err
-	}
-	defer res.Body.Close()
+	var body []byte
+	var err error
+	var res *http.Response
+	if cachedBody, ok := cfg.Cache.Get(url); ok {
+		body = cachedBody
+	} else {
+		res, err = http.Get(url)
+		if err != nil {
+			fmt.Println(err)
+			return err
+		}
+		defer res.Body.Close()
 
-	body, err := io.ReadAll(res.Body)
-	if err != nil {
-		fmt.Println(err)
-		return err
+		body, err = io.ReadAll(res.Body)
+		if err != nil {
+			fmt.Println(err)
+			return err
+		}
+
+		cfg.Cache.Add(url, body)
 	}
 
 	err = json.Unmarshal(body, &target)
@@ -66,17 +78,26 @@ func commandMapb(cfg *config) error {
 
 	url = *cfg.Previous
 
-	res, err := http.Get(url)
-	if err != nil {
-		fmt.Println(err)
-		return err
-	}
-	defer res.Body.Close()
+	var body []byte
+	var err error
+	var res *http.Response
+	if cachedBody, ok := cfg.Cache.Get(url); ok {
+		body = cachedBody
+	} else {
+		res, err = http.Get(url)
+		if err != nil {
+			fmt.Println(err)
+			return err
+		}
+		defer res.Body.Close()
 
-	body, err := io.ReadAll(res.Body)
-	if err != nil {
-		fmt.Println(err)
-		return err
+		body, err = io.ReadAll(res.Body)
+		if err != nil {
+			fmt.Println(err)
+			return err
+		}
+
+		cfg.Cache.Add(url, body)
 	}
 
 	err = json.Unmarshal(body, &target)

@@ -4,6 +4,9 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"time"
+
+	"github.com/TTTV273/Pokedex/internal/pokecache"
 )
 
 func main() {
@@ -30,7 +33,9 @@ func main() {
 			callback:    commandMapb,
 		},
 	}
-	cfg := config{}
+	cfg := config{
+		Cache: pokecache.NewCache(5 * time.Minute),
+	}
 
 	for {
 		fmt.Print("Pokedex > ")
