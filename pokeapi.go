@@ -11,7 +11,21 @@ import (
 )
 
 type Pokemon struct {
+	Name           string
 	BaseExperience int `json:"base_experience"`
+	Height         int
+	Weight         int
+	Stats          []struct {
+		BaseStat int `json:"base_stat"`
+		Stat     struct {
+			Name string `json:"name"`
+		}
+	}
+	Types []struct {
+		Type struct {
+			Name string `json:"name"`
+		}
+	}
 }
 
 type config struct {
@@ -207,6 +221,26 @@ func commandCatch(cfg *config, args []string) error {
 		cfg.Pokedex[args[0]] = target
 	} else {
 		fmt.Printf("%v escaped!\n", args[0])
+	}
+
+	return nil
+}
+
+func commandInspect(cfg *config, args []string) error {
+	if pokemon, ok := cfg.Pokedex[args[0]]; ok {
+		fmt.Printf("Name: %v\n", pokemon.Name)
+		fmt.Printf("Height: %v\n", pokemon.Height)
+		fmt.Printf("Weight: %v\n", pokemon.Weight)
+		fmt.Println("Stats:")
+		for _, stat := range pokemon.Stats {
+			fmt.Printf("  -%v: %v\n", stat.Stat.Name, stat.BaseStat)
+		}
+		fmt.Println("Types:")
+		for _, name := range pokemon.Types {
+			fmt.Printf("  -%v\n", name.Type.Name)
+		}
+	} else {
+		fmt.Printf("you have not caught that pokemon\n")
 	}
 
 	return nil

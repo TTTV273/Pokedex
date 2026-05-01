@@ -42,6 +42,11 @@ func main() {
 			description: "Catch a pokemon by name",
 			callback:    commandCatch,
 		},
+		"inspect": {
+			name:        "inspect",
+			description: "Inspect a pokemon by name",
+			callback:    commandInspect,
+		},
 	}
 	cfg := config{
 		Cache:   pokecache.NewCache(5 * time.Minute),
