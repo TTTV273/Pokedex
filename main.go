@@ -37,9 +37,15 @@ func main() {
 			description: "displays a list of all Pokémon in a location area",
 			callback:    commandExplore,
 		},
+		"catch": {
+			name:        "catch",
+			description: "Catch a pokemon by name",
+			callback:    commandCatch,
+		},
 	}
 	cfg := config{
-		Cache: pokecache.NewCache(5 * time.Minute),
+		Cache:   pokecache.NewCache(5 * time.Minute),
+		Pokedex: make(map[string]Pokemon),
 	}
 
 	for {

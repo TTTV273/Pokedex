@@ -4,15 +4,21 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"math/rand"
 	"net/http"
 
 	"github.com/TTTV273/Pokedex/internal/pokecache"
 )
 
+type Pokemon struct {
+	BaseExperience int `json:"base_experience"`
+}
+
 type config struct {
 	Next     *string
 	Previous *string
 	Cache    pokecache.Cache
+	Pokedex  map[string]Pokemon
 }
 
 type locationAreaResponse struct {
@@ -156,6 +162,51 @@ func commandExplore(cfg *config, args []string) error {
 
 	for _, area := range target.PokemonEncounters {
 		fmt.Println(area.Pokemon.Name)
+	}
+
+	return nil
+}
+
+func commandCatch(cfg *config, args []string) error {
+	fmt.Printf("Throwing a Pokeball at %v...\n", args[0])
+	url := "https://pokeapi.co/api/v2/pokemon/" + args[0]
+	target := Pokemon{}
+
+	var body []byte
+	var err error
+	var res *http.Response
+	if cachedBody, ok := cfg.Cache.Get(url); ok {
+		body = cachedBody
+	} else {
+		res, err = http.Get(url)
+		if err != nil {
+			fmt.Println(err)
+			return err
+		}
+		defer res.Body.Close()
+
+		body, err = io.ReadAll(res.Body)
+		if err != nil {
+			fmt.Println(err)
+			return err
+		}
+
+		cfg.Cache.Add(url, body)
+	}
+
+	err = json.Unmarshal(body, &target)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+
+	threshold := 50
+	randomNum := rand.Intn(target.BaseExperience)
+	if randomNum < threshold {
+		fmt.Printf("%v was caught!\n", args[0])
+		cfg.Pokedex[args[0]] = target
+	} else {
+		fmt.Printf("%v escaped!\n", args[0])
 	}
 
 	return nil
