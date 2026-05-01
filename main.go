@@ -32,6 +32,11 @@ func main() {
 			description: "Displays the previous 20 locations",
 			callback:    commandMapb,
 		},
+		"explore": {
+			name:        "explore",
+			description: "displays a list of all Pokémon in a location area",
+			callback:    commandExplore,
+		},
 	}
 	cfg := config{
 		Cache: pokecache.NewCache(5 * time.Minute),
@@ -44,7 +49,7 @@ func main() {
 		words := cleanInput(input)
 		command, ok := commands[words[0]]
 		if ok {
-			err := command.callback(&cfg)
+			err := command.callback(&cfg, words[1:])
 			if err != nil {
 				fmt.Println(err)
 			}
